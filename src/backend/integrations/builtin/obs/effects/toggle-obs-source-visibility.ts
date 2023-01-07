@@ -32,33 +32,42 @@ export const ToggleSourceVisibilityEffectType: Firebot.EffectType<EffectProperti
     },
     optionsTemplate: `
     <eos-container header="Sources">
-      <div ng-if="sourceData != null" ng-repeat="sceneName in getSceneNames()">
-        <div style="font-size: 16px;font-weight: 900;color: #b9b9b9;margin-bottom: 5px;">{{sceneName}}</div>
-        <div ng-repeat="source in getSources(sceneName)">
-          <label  class="control-fb control--checkbox">{{source.name}}
-              <input type="checkbox" ng-click="toggleSourceSelected(sceneName, source.id, source.groupName)" ng-checked="sourceIsSelected(sceneName, source.id)"  aria-label="..." >
-              <div class="control__indicator"></div>
-          </label>
-          <div ng-show="sourceIsSelected(sceneName, source.id)" style="margin-bottom: 15px;">
-            <div class="btn-group" uib-dropdown>
-                <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle>
-                {{getSourceActionDisplay(sceneName, source.id)}} <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <li role="menuitem" ng-click="setSourceAction(sceneName, source.id, true)"><a href>Show</a></li>
-                    <li role="menuitem" ng-click="setSourceAction(sceneName, source.id, false)"><a href>Hide</a></li>
-                    <li role="menuitem" ng-click="setSourceAction(sceneName, source.id, 'toggle')"><a href>Toggle</a></li>
-                </ul>
+      <div class="effect-setting-container">
+        <div class="input-group">
+          <span class="input-group-addon">Filter by sources:</span>
+          <input type="text" class="form-control" ng-model="searchText" placeholder="Enter your search term here..." aria-describeby="obs-visibility-search-box">
+        </div>
+      </div>
+    
+      <div class="effect-setting-container setting-padtop">
+        <div ng-if="sourceData != null" ng-repeat="sceneName in getSceneNames()">
+          <div style="font-size: 16px;font-weight: 900;color: #b9b9b9;margin-bottom: 5px;">{{sceneName}}</div>
+          <div ng-repeat="source in getSources(sceneName) | filter:searchText">
+            <label  class="control-fb control--checkbox">{{source.name}}
+                <input type="checkbox" ng-click="toggleSourceSelected(sceneName, source.id, source.groupName)" ng-checked="sourceIsSelected(sceneName, source.id)"  aria-label="..." >
+                <div class="control__indicator"></div>
+            </label>
+            <div ng-show="sourceIsSelected(sceneName, source.id)" style="margin-bottom: 15px;">
+              <div class="btn-group" uib-dropdown>
+                  <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle>
+                  {{getSourceActionDisplay(sceneName, source.id)}} <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                      <li role="menuitem" ng-click="setSourceAction(sceneName, source.id, true)"><a href>Show</a></li>
+                      <li role="menuitem" ng-click="setSourceAction(sceneName, source.id, false)"><a href>Hide</a></li>
+                      <li role="menuitem" ng-click="setSourceAction(sceneName, source.id, 'toggle')"><a href>Toggle</a></li>
+                  </ul>
+              </div>
             </div>
           </div>
         </div>
+        <div ng-if="sourceData == null" class="muted">
+          No sources found. Is OBS running?
+        </div>
+        <p>
+            <button class="btn btn-link" ng-click="getSourceData()">Refresh Source Data</button>
+        </p>
       </div>
-      <div ng-if="sourceData == null" class="muted">
-        No sources found. Is OBS running?
-      </div>
-      <p>
-          <button class="btn btn-link" ng-click="getSourceData()">Refresh Source Data</button>
-      </p>
     </eos-container>
   `,
     optionsController: ($scope: Scope, backendCommunicator: any, $q: any) => {
