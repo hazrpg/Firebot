@@ -35,12 +35,12 @@ export const ToggleSourceVisibilityEffectType: Firebot.EffectType<EffectProperti
       <div class="effect-setting-container">
         <div class="input-group">
           <span class="input-group-addon">Filter by sources:</span>
-          <input type="text" class="form-control" ng-model="searchText" placeholder="Enter your search term here..." aria-describeby="obs-visibility-search-box">
+          <input type="text" class="form-control" ng-change="filterScenes(searchText)" ng-model="searchText" placeholder="Enter your search term here..." aria-describeby="obs-visibility-search-box">
         </div>
       </div>
     
       <div class="effect-setting-container setting-padtop">
-        <div ng-if="sourceData != null" ng-repeat="sceneName in getSceneNames()">
+        <div ng-if="sourceData != null" ng-repeat="sceneName in sceneNames">
           <div style="font-size: 16px;font-weight: 900;color: #b9b9b9;margin-bottom: 5px;">{{sceneName}}</div>
           <div ng-repeat="source in getSources(sceneName) | filter:searchText">
             <label  class="control-fb control--checkbox">{{source.name}}
@@ -85,6 +85,19 @@ export const ToggleSourceVisibilityEffectType: Firebot.EffectType<EffectProperti
 
       $scope.getSceneNames = () => {
         return $scope.sourceData ? Object.keys($scope.sourceData) : [];
+      };
+
+      $scope.filterScenes = (filter: string = "") => {
+        $scope.sceneNames = [];
+        if ($scope.sourceData == null) {
+          return;
+        }
+
+        for (const sceneName of $scope.getSceneNames()) {
+          if ($scope.getSources(sceneName).filter(source => source.name.toLowerCase().includes(filter.toLowerCase())).length > 0) {
+            $scope.sceneNames.push(sceneName);
+          }
+        }
       };
 
       $scope.sourceIsSelected = (sceneName: string, sourceId: number) => {
@@ -140,6 +153,7 @@ export const ToggleSourceVisibilityEffectType: Firebot.EffectType<EffectProperti
         $q.when(backendCommunicator.fireEventAsync("obs-get-source-data")).then(
           (sourceData: SourceData) => {
             $scope.sourceData = sourceData ?? null;
+            $scope.filterScenes();
           }
         );
       };
